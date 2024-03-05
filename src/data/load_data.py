@@ -36,8 +36,10 @@ def load_csv_data(filename):
 
 def clean_data(data):
     """Nettoie les données chargées."""
-    # Exemple : Supprimer les lignes avec des valeurs manquantes
+    #Supprimer les lignes avec des valeurs manquantes
     cleaned_data = data.dropna()
+    #Supprimer les doublons
+    cleaned_data = cleaned_data.drop_duplicates()
     return cleaned_data
 
 def split_data(data, test_size=0.2):
