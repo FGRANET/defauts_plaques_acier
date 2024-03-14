@@ -16,6 +16,7 @@ DEFAUTS_PLAQUES_ACIER/
 │   ├── data/
 │   │   ├── load_data.py
 │   │   ├── clean_data.py
+│   │   └── split_data.csv
 │   ├── evaluation/
 │   │   ├── model_evaluation.py
 │   ├── features/
