@@ -3,44 +3,30 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-def load_csv_data(filename):
+import pandas as pd
+from pathlib import Path
+
+def load_csv_data(data_filename, data_folder_path):
     """
-    Charge les données depuis un fichier CSV situé dans le dossier 'data' relatif 
-    à l'emplacement du script actuel.
+    Charge les données depuis un fichier CSV situé dans le dossier 'data' ou un de ses sous-dossiers.
     
-    :param filename: str, le nom du fichier CSV à charger.
+    :param data_filename: str, le nom du fichier CSV à charger avec son extension .csv.
+    :param data_folder: str, le chemin du dossier parent du projet.
     :return: pandas.DataFrame, les données chargées, ou None si le fichier n'est pas trouvé.
     """
-    # Obtenir le chemin du dossier où se trouve le script actuellement exécuté
-    script_location = Path(__file__).resolve().parent
+    data_folder_path = Path(data_folder_path)
+    # Rechercher le fichier dans le dossier et ses sous-dossiers
+    file_list = list(data_folder_path.rglob(data_filename))
     
-    # Construire un chemin relatif vers le fichier de données
-    data_file_path = script_location / '..' /'..' / 'data' /'raw'/ filename
-    
-    # Assurer que le chemin est résolu (absolu) et que le fichier existe
-    data_file_path = data_file_path.resolve()
-
-    # Charger les données si le fichier existe
-    if data_file_path.exists():
-        try:
-            data = pd.read_csv(data_file_path, index_col=0)
-            print(f"Data loaded successfully from {data_file_path}")
-            return data
-        except Exception as e:
-            print(f"Failed to load data from {data_file_path}: {e}")
+    # Vérifier si au moins un fichier correspondant au nom a été trouvé
+    if file_list:
+        # Charger les données depuis le premier fichier trouvé
+        df = pd.read_csv(file_list[0], index_col=0)
+        print(f"Data loaded successfully from {file_list[0]}")
+        return df
     else:
-        print(f"The file at {data_file_path} was not found.")
-    
+        print(f"Le fichier {data_filename} n'a pas été trouvé dans {data_folder_path} ou ses sous-dossiers.")
         return None
-
-
-def clean_data(data):
-    """Nettoie les données chargées."""
-    #Supprimer les lignes avec des valeurs manquantes
-    cleaned_data = data.dropna()
-    #Supprimer les doublons
-    cleaned_data = cleaned_data.drop_duplicates()
-    return cleaned_data
 
 def split_data(data, test_size=0.2):
     """Divise les données en ensembles d'entraînement et de test."""
