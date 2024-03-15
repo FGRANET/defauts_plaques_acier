@@ -2,7 +2,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from data.load_data import load_csv_data
-from features.feature_engineering import select_k_best_features
+from features.select_features import select_k_best_features
 
 # Créer un pipeline
 pipeline = Pipeline([
