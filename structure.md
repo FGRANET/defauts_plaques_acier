@@ -17,10 +17,12 @@ DEFAUTS_PLAQUES_ACIER/
 │   │   ├── load_data.py
 │   │   ├── clean_data.py
 │   │   └── split_data.csv
+│   │   └── preprocess_data.csv
 │   ├── evaluation/
 │   │   ├── model_evaluation.py
 │   ├── features/
 │   │   ├── feature_engineering.py
+│   │   ├── select_features.py
 │   ├── models/
 │   │   ├── _pycache_
 │   │   ├── model_pipeline.py
