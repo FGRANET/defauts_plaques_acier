@@ -7,7 +7,9 @@ from src.data.split_data import split_data
 from src.data.preprocess_data import standardize_data
 from src.features.select_features import select_features_kbest,select_features_select_from_model,select_features_rfe
 from src.models.model_random_forest import* 
+from src.models.model_gridsearch import*
 from src.evaluation.model_evaluation import*
+
 import mlflow
 
 
@@ -22,6 +24,7 @@ parser.add_argument('--feature-engineering',action='store_true', help="Création
 parser.add_argument('--select-features', action='store_true', help="Activer la sélection de caractéristiques")
 parser.add_argument('--method', type=str, default='select_from_model', choices=['select_kbest','select_from_model', 'rfe'], help="Méthode de sélection de caractéristiques à utiliser")
 parser.add_argument('--model-random-forest', action='store_true', help="Entrainement random forest")
+parser.add_argument('--model-gridsearch', action='store_true', help="Recherche de grille d'hyperpapramètres")
 parser.add_argument('--model-evaluation', action='store_true', help="Evaluation sur le test")
 # Ajout d'autres arguments selon les besoins
 args = parser.parse_args()
@@ -71,6 +74,19 @@ def main():
         params = model.model.get_params()
         for param, value in params.items():
             mlflow.log_param(param, value)
+    
+    if args.model_gridsearch:
+        #utilisation de la classe RandomForestClassifier de scikitlearn
+        estimator = RandomForestClassifier()
+        param_grid = {
+                        'n_estimators': [100, 200],
+                        'max_depth': [5, 10, None]
+                    }
+        gridsearch=GridSearch(estimator, param_grid, cv=5, scoring=average_auc_scorer, verbose=1, n_jobs=-1)
+        best_grid = gridsearch.fit(X_train,y_train)
+        score = auc_scorer(best_grid, X_test, y_test)
+        print(f"le meilleur modèle a pour score sur le test :{score}")
+
 
     
     if args.model_evaluation:
