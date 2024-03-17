@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import numpy as np
 from src.data.load_data import load_csv_data
 from src.data.clean_data import dropna, drop_duplicates
 from src.data.split_data import split_data
@@ -21,7 +22,7 @@ parser.add_argument('--feature-engineering',action='store_true', help="Création
 parser.add_argument('--select-features', action='store_true', help="Activer la sélection de caractéristiques")
 parser.add_argument('--method', type=str, default='select_from_model', choices=['select_kbest','select_from_model', 'rfe'], help="Méthode de sélection de caractéristiques à utiliser")
 parser.add_argument('--model-random-forest', action='store_true', help="Entrainement random forest")
-parser.add_argument('--model-evaluation', action='store_true', help="Evaluation sur le train et le test")
+parser.add_argument('--model-evaluation', action='store_true', help="Evaluation sur le test")
 # Ajout d'autres arguments selon les besoins
 args = parser.parse_args()
 
@@ -61,8 +62,11 @@ def main():
     if args.model_random_forest:
         model = RandomForestModel()
         model.train(X_train, y_train)
-        y_pred = pd.DataFrame(model.predict(X_test))
-        y_pred.columns = y_test.columns
+        y_pred_proba = model.predict_proba(X_test)
+        # Extraire la probabilité de la classe positive pour chaque cible et créer un array 2D
+        prob_positives = np.array([proba[:, 1] for proba in y_pred_proba]).T  # Transposer pour avoir la forme correcte (n_samples, n_targets)
+        y_pred_proba = pd.DataFrame(prob_positives, columns=y_test.columns)
+
         mlflow.log_param("Model", model.name)
         params = model.model.get_params()
         for param, value in params.items():
@@ -70,7 +74,7 @@ def main():
 
     
     if args.model_evaluation:
-        eval_test = ModelEvaluation(y_test, y_pred)
+        eval_test = ModelEvaluation(y_test, y_pred_proba)
         score = eval_test.average_auc()
         print(f"La moyenne des scores AUC est:{score}")
         mlflow.log_metric("average_auc", score)
