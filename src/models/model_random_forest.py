@@ -13,6 +13,7 @@ class RandomForestModel:
         Initialisation du modèle Random Forest avec des hyperparamètres de base.
         """
         self.model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state)
+        self.name = "RandomForest"
 
     def train(self, X_train, y_train):
         """
