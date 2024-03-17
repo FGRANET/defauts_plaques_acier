@@ -12,4 +12,4 @@ def standardize_data(X_train,X_test):
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
     print("Standardisation effectuée")
-    return X_train,X_test
+    return X_train,X_test,"standardisation"

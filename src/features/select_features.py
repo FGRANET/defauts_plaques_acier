@@ -12,7 +12,7 @@ def select_features_kbest(X_train, y_train, X_test, k=10):
     X_test_selected = selector.transform(X_test)
     print(f"les {k} features les plus pertinentes ont été sélectionnées.")
 
-    return X_train_selected, X_test_selected
+    return X_train_selected, X_test_selected,"selectKbest"
 
 
 def select_features_select_from_model(X_train,X_test, y_train, model=None, threshold='mean'):
@@ -34,7 +34,7 @@ def select_features_select_from_model(X_train,X_test, y_train, model=None, thres
     X_test_selected = selector.transform(X_test)
     selected_features = X_train.columns[selector.get_support()]
     
-    return X_train_selected,X_test_selected, selected_features
+    return X_train_selected,X_test_selected, selected_features,"select_from_model"
 
 
 def select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=None):
@@ -57,4 +57,4 @@ def select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=
     X_test_selected = rfe.transform(X_test)
     selected_features = X_train.columns[rfe.support_]
     
-    return X_train_selected,X_test_selected, selected_features
+    return X_train_selected,X_test_selected, selected_features,"rfe"
