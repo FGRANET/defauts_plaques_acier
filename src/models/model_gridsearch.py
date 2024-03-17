@@ -2,24 +2,19 @@ from sklearn.model_selection import GridSearchCV
 import joblib
 
 class GridSearch:
+    
     def __init__(self, estimator, param_grid, cv=5, scoring='accuracy', verbose=1, n_jobs=-1):
         """
-        Initialisation de la recherche par grille.
-        
+        Initialisation avec des arguments dynamiques.
+
         :param estimator: Le modèle/estimateur sur lequel effectuer la recherche par grille.
-        :param param_grid: Grille de paramètres à tester.
-        :param cv: Nombre de folds de validation croisée.
-        :param scoring: Métrique d'évaluation.
-        :param verbose: Niveau de verbosité.
-        :param n_jobs: Nombre de cœurs à utiliser pour le calcul parallèle.
+        :param param_grid: Grille de paramètres à tester pour l'estimateur.
+        :param cv: Nombre de plis pour la validation croisée.
+        :param scoring: Métrique de scoring à utiliser.
+        :param verbose: Niveau de verbosité de la sortie.
+        :param n_jobs: Nombre de jobs à exécuter en parallèle.
         """
-        self.estimator = estimator
-        self.param_grid = param_grid
-        self.cv = cv
-        self.scoring = scoring
-        self.verbose = verbose
-        self.n_jobs = n_jobs
-        self.grid_search = None
+        self.grid_search = GridSearchCV(estimator, param_grid, cv=cv, scoring=scoring, verbose=verbose, n_jobs=n_jobs)
 
     def fit(self, X, y):
         """
@@ -28,8 +23,7 @@ class GridSearch:
         :param X: Les caractéristiques d'entraînement.
         :param y: Les étiquettes cibles.
         """
-        self.grid_search = GridSearchCV(estimator=self.estimator, param_grid=self.param_grid,
-                                        cv=self.cv, scoring=self.scoring, verbose=self.verbose, n_jobs=self.n_jobs)
+        
         self.grid_search.fit(X, y)
         print(f"Meilleurs paramètres: {self.grid_search.best_params_}")
         print(f"Meilleur score: {self.grid_search.best_score_}")
