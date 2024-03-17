@@ -1,6 +1,5 @@
 import argparse
 import pandas as pd
-from pathlib import Path
 from src.data.load_data import load_csv_data
 from src.data.clean_data import dropna, drop_duplicates
 from src.data.split_data import split_data
@@ -8,6 +7,10 @@ from src.data.preprocess_data import standardize_data
 from src.features.select_features import select_features_kbest,select_features_select_from_model,select_features_rfe
 from src.models.model_random_forest import* 
 from src.evaluation.model_evaluation import*
+import mlflow
+
+
+mlflow.set_experiment("Defauts_Plques_Acier_Experiment")
 
 parser = argparse.ArgumentParser(description="Pipeline d'exécution pour le projet DEFAUTS_PLAQUES_ACIER")
 parser.add_argument('--load-data', action='store_true', help="Charge les données depuis le fichier CSV")
@@ -61,13 +64,6 @@ def main():
         eval_test = ModelEvaluation(y_test, y_pred)
         score = eval_test.average_auc()
         print(f"La moyenne des scores AUC est:{score}")
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
