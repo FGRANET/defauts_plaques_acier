@@ -42,16 +42,21 @@ def main():
         X_train,X_test,y_train,y_test=split_data(data,target, test_size=0.2)
     
     if args.preprocess_data:
-        X_train,X_test= standardize_data(X_train,X_test)
+
+        X_train,X_test,preprocessing_step= standardize_data(X_train,X_test)
+        mlflow.log_param(f"preprocess", preprocessing_step)
     
     if args.select_features:
         if args.method =='select_kbest':
-            X_train, X_test = select_features_kbest(X_train, y_train, X_test, k=10)
-        if args.method == 'select_from_model':
-            X_train, X_test, selected_features = select_features_select_from_model(X_train,X_test, y_train, model=None, threshold='mean')
+            X_train, X_test,selector = select_features_kbest(X_train, y_train, X_test, k=10) 
+        elif args.method == 'select_from_model':
+            X_train, X_test, selected_features,selector = select_features_select_from_model(X_train,X_test, y_train, model=None, threshold='mean')
+            print(f"Caractéristiques sélectionnées : {selected_features}")
         elif args.method == 'rfe':
-            X_train, X_test, selected_features = select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=None)
-        print(f"Caractéristiques sélectionnées : {selected_features}")
+            X_train, X_test, selected_features,selector = select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=None)
+            print(f"Caractéristiques sélectionnées : {selected_features}")
+        mlflow.log_param(f"selector", selector)
+        
     
     if args.model_random_forest:
         model = RandomForestModel()
@@ -59,11 +64,16 @@ def main():
         y_pred = pd.DataFrame(model.predict(X_test))
         y_pred.columns = y_test.columns
 
+        params = model.get_params()
+        for param, value in params.items():
+            mlflow.log_param(param, value)
+
     
     if args.model_evaluation:
         eval_test = ModelEvaluation(y_test, y_pred)
         score = eval_test.average_auc()
         print(f"La moyenne des scores AUC est:{score}")
+        mlflow.log_metric("average_auc", score)
 
 
 if __name__ == "__main__":
