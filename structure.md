@@ -25,6 +25,7 @@ DEFAUTS_PLAQUES_ACIER/
 │   │   ├── select_features.py
 │   ├── models/
 │   │   ├── _pycache_
+│   │   ├── model_random_forest.py
 │   │   ├── model_pipeline.py
 │   │   └── model_training.py
 │   └── utils/
