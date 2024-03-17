@@ -44,7 +44,7 @@ def main():
     if args.preprocess_data:
 
         X_train,X_test,preprocessing_step= standardize_data(X_train,X_test)
-        mlflow.log_param(f"preprocess", preprocessing_step)
+        mlflow.log_param("preprocess", preprocessing_step)
     
     if args.select_features:
         if args.method =='select_kbest':
@@ -55,7 +55,7 @@ def main():
         elif args.method == 'rfe':
             X_train, X_test, selected_features,selector = select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=None)
             print(f"Caractéristiques sélectionnées : {selected_features}")
-        mlflow.log_param(f"selector", selector)
+        mlflow.log_param("selector", selector)
         
     
     if args.model_random_forest:
@@ -63,8 +63,8 @@ def main():
         model.train(X_train, y_train)
         y_pred = pd.DataFrame(model.predict(X_test))
         y_pred.columns = y_test.columns
-
-        params = model.get_params()
+        mlflow.sklearn.log_model(model.model, "Model")
+        params = model.model.get_params()
         for param, value in params.items():
             mlflow.log_param(param, value)
 
