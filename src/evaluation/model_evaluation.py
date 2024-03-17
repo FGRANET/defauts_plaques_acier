@@ -1,4 +1,6 @@
 from sklearn.metrics import roc_auc_score
+import numpy as np
+import pandas as pd
 
 class ModelEvaluation:
     def __init__(self, true_labels, predictions):
@@ -31,3 +33,23 @@ class ModelEvaluation:
         return average_auc
 
 
+from sklearn.metrics import make_scorer
+
+def auc_scorer(model, X, y_true):
+    """
+    Fonction de scoring personnalisée pour calculer l'AUC moyen.
+    
+    :param model: le modèle à évaluer
+    :param X: les données sur lesquelles faire des prédictions
+    :param y_true: les vraies étiquettes
+    """
+    y_pred_proba = model.predict_proba(X)
+    prob_positives = np.array([proba[:, 1] for proba in y_pred_proba]).T  # Transposer pour avoir la forme correcte (n_samples, n_targets)
+    y_pred_proba = pd.DataFrame(prob_positives, columns=y_true.columns)
+
+    eval_model = ModelEvaluation(y_true, y_pred_proba)
+    score = eval_model.average_auc()
+    return score
+
+# Créer un scorer scikit-learn à partir de la fonction de scoring personnalisée
+average_auc_scorer = make_scorer(auc_scorer, needs_proba=True)
