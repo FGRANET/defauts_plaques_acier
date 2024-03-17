@@ -1,4 +1,5 @@
 import argparse
+import pandas as pd
 from pathlib import Path
 from src.data.load_data import load_csv_data
 from src.data.clean_data import dropna, drop_duplicates
@@ -52,12 +53,14 @@ def main():
     if args.model_random_forest:
         model = RandomForestModel()
         model.train(X_train, y_train)
-        y_pred = model.predict(X_test)
+        y_pred = pd.DataFrame(model.predict(X_test))
+        y_pred.columns = y_test.columns
+
     
     if args.model_evaluation:
         eval_test = ModelEvaluation(y_test, y_pred)
         score = eval_test.average_auc()
-        print(score)
+        print(f"La moyenne des scores AUC est:{score}")
 
 
 
