@@ -16,7 +16,7 @@ class ModelEvaluation:
         :return: dictionnaire des AUC pour chaque défaut.
         """
         auc_scores = {}
-        for column in self.true_labels.columns:
+        for i,column in enumerate(self.true_labels.columns):
             auc = roc_auc_score(self.true_labels[column], self.predictions[column])
             auc_scores[column] = auc
         return auc_scores
