@@ -63,7 +63,7 @@ def main():
         model.train(X_train, y_train)
         y_pred = pd.DataFrame(model.predict(X_test))
         y_pred.columns = y_test.columns
-        mlflow.sklearn.log_model(model.model, "Model")
+        mlflow.log_param("Model", model.name)
         params = model.model.get_params()
         for param, value in params.items():
             mlflow.log_param(param, value)
