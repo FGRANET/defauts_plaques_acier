@@ -19,13 +19,21 @@ class RandomForestModel:
         Entraîne le modèle Random Forest sur les données fournies.
         """
         self.model.fit(X_train, y_train)
+        print(f"entrainement du modèle effectuée:{self.model}")
 
     def predict(self, X):
         """
         Prédiction avec le modèle Random Forest.
         """
+        print(f"prédiction du modèle effectuée :{self.model}")
         return self.model.predict(X)
-            
+
+    def predict_proba(self, X):
+        """
+        Prédiction avec le modèle Random Forest.
+        """
+        print(f"prédiction proba du modèle effectuée :{self.model}")
+        return self.model.predict_proba(X)        
 
     def tune_parameters(self, X, y, param_grid, cv=3):
         """
