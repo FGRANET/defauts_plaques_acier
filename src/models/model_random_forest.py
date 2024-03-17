@@ -1,29 +1,55 @@
-import mlflow
-from sklearn.model_selection import train_test_split
-from model_pipeline import pipeline
-from ..data.load_data import load_csv_data
+#dictionnaire exhaustif des hyperparamètres
 
+# src/models/random_forest.py
 
-# Chargement et préparation des données
-df = load_csv_data("train.csv")
-features = df.iloc[:,:-8]
-target = df.iloc[:,:-7]
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+import joblib
+import os
 
-X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2)
+class RandomForestModel:
+    def __init__(self, n_estimators=100, max_depth=None, random_state=42):
+        """
+        Initialisation du modèle Random Forest avec des hyperparamètres de base.
+        """
+        self.model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state)
 
-# Initialisation de MLflow
-mlflow.set_experiment('my_experiment')
+    def train(self, X_train, y_train):
+        """
+        Entraîne le modèle Random Forest sur les données fournies.
+        """
+        self.model.fit(X_train, y_train)
 
-with mlflow.start_run():
-    # Configuration du modèle et des paramètres
-    params = {'n_estimators': 100, 'max_depth': 4}
-    pipeline.set_params(**params)
+    def predict(self, X):
+        """
+        Prédiction avec le modèle Random Forest.
+        """
+        return self.model.predict(X)
+            
 
-    # Entraînement et évaluation du modèle
-    pipeline.fit(X_train, y_train)
-    score = pipeline.score(X_test, y_test)
+    def tune_parameters(self, X, y, param_grid, cv=3):
+        """
+        Réglage des hyperparamètres du modèle Random Forest avec GridSearchCV.
+        """
+        grid_search = GridSearchCV(self.model, param_grid, cv=cv, scoring='accuracy')
+        grid_search.fit(X, y)
+        self.model = grid_search.best_estimator_
+        print(f"Meilleurs hyperparamètres : {grid_search.best_params_}")
+        print(f"Meilleur score de validation croisée : {grid_search.best_score_:.4f}")
 
-    # Logging des paramètres, métriques, et du modèle
-    mlflow.log_params(params)
-    mlflow.log_metric('accuracy', score)
-    mlflow.sklearn.log_model(pipeline, 'model')
+    def save_model(self, path='model.joblib'):
+        """
+        Sauvegarde le modèle entraîné sur le disque.
+        """
+        joblib.dump(self.model, path)
+        print(f"Modèle sauvegardé à l'emplacement : {path}")
+
+    def load_model(self, path='model.joblib'):
+        """
+        Charge un modèle depuis le disque.
+        """
+        if os.path.exists(path):
+            self.model = joblib.load(path)
+            print(f"Modèle chargé depuis : {path}")
+        else:
+            print("Le chemin du modèle spécifié n'existe pas.")
