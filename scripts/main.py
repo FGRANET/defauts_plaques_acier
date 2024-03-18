@@ -78,13 +78,20 @@ def main():
     if args.model_gridsearch:
         #utilisation de la classe RandomForestClassifier de scikitlearn
         estimator = RandomForestClassifier()
+
         param_grid = {
                         'n_estimators': [100, 200],
                         'max_depth': [5, 10, None]
                     }
-        gridsearch=GridSearch(estimator, param_grid, cv=5, scoring=average_auc_scorer, verbose=1, n_jobs=-1)
-        best_grid = gridsearch.fit(X_train,y_train)
-        score = auc_scorer(best_grid, X_test, y_test)
+        
+        grid_search=GridSearch(estimator=estimator, param_grid=param_grid, cv=5, scoring=average_auc_scorer, verbose=1, n_jobs=-1)
+
+        grid_search.fit(X_train,y_train)
+
+        y_pred_proba = adapt_pred_proba(grid_search.grid_search.best_estimator_, X_test, y_test)
+        
+        score = auc_scorer(y_test,y_pred_proba)
+
         print(f"le meilleur modèle a pour score sur le test :{score}")
 
 
