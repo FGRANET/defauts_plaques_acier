@@ -9,7 +9,8 @@ from src.features.select_features import select_features_kbest,select_features_s
 from src.models.model_random_forest import* 
 from src.models.model_gridsearch import*
 from src.evaluation.model_evaluation import*
-
+from sklearn.metrics import roc_auc_score
+from src.models.multi_label import*
 import mlflow
 
 
@@ -66,6 +67,7 @@ def main():
         model = RandomForestModel()
         model.train(X_train, y_train)
         y_pred_proba = model.predict_proba(X_test)
+        print(y_pred_proba)
         # Extraire la probabilité de la classe positive pour chaque cible et créer un array 2D
         prob_positives = np.array([proba[:, 1] for proba in y_pred_proba]).T  # Transposer pour avoir la forme correcte (n_samples, n_targets)
         y_pred_proba = pd.DataFrame(prob_positives, columns=y_test.columns)
@@ -77,20 +79,21 @@ def main():
     
     if args.model_gridsearch:
         #utilisation de la classe RandomForestClassifier de scikitlearn
-        estimator = RandomForestClassifier()
+        base_model = RandomForestClassifier() 
+        wrapped_model = MultiLabelModelWrapper(base_model)
 
         param_grid = {
                         'n_estimators': [100, 200],
                         'max_depth': [5, 10, None]
                     }
         
-        grid_search=GridSearch(estimator=estimator, param_grid=param_grid, cv=5, scoring=average_auc_scorer, verbose=1, n_jobs=-1)
+        grid_search=GridSearch(estimator=wrapped_model, param_grid=param_grid, cv=5, scoring=multi_label_auc)
 
         grid_search.fit(X_train,y_train)
 
-        y_pred_proba = adapt_pred_proba(grid_search.grid_search.best_estimator_, X_test, y_test)
-        
-        score = auc_scorer(y_test,y_pred_proba)
+        y_pred_proba = grid_search.grid_search.best_estimator_.predict_proba(X_test)
+       
+        score = multi_label_auc_scorer(y_test,y_pred_proba)
 
         print(f"le meilleur modèle a pour score sur le test :{score}")
 

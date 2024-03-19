@@ -1,6 +1,7 @@
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import  make_scorer
 import numpy as np
-import pandas as pd
+
 
 class ModelEvaluation:
     def __init__(self, true_labels, predictions):
@@ -33,27 +34,27 @@ class ModelEvaluation:
         return average_auc
 
 
+
+def multi_label_auc_scorer(y_true, y_pred):
+    """
+    Calcule le score AUC moyen pour un problème multi-label.
+    
+    :param y_true: Les vraies étiquettes (un tableau 2D avec des indicateurs binaires).
+    :param y_pred: Les scores ou probabilités prédites pour chaque label (également un tableau 2D).
+    :return: Le score AUC moyen.
+    """
+    # Assurez-vous que y_true et y_pred sont des numpy arrays
+    if not isinstance(y_true, np.ndarray):
+        y_true = np.array(y_true)
+    if not isinstance(y_pred, np.ndarray):
+        y_pred = np.array(y_pred)
+        
+    # Calculer le score AUC pour chaque label et prendre la moyenne
+    auc_scores = [roc_auc_score(y_true[:, i], y_pred[:, i]) for i in range(y_true.shape[1])]
+    return np.mean(auc_scores)
+
+
 from sklearn.metrics import make_scorer
 
-def adapt_pred_proba(model,X,y_true):
-    y_pred_proba = model.predict_proba(X)
-    prob_positives = np.array([proba[:, 1] for proba in y_pred_proba]).T  # Transposer pour avoir la forme correcte (n_samples, n_targets)
-    y_pred_proba = pd.DataFrame(prob_positives, columns=y_true.columns)
-    return y_pred_proba
-
-def auc_scorer(y_true,y_pred_proba):
-    """
-    Fonction de scoring personnalisée pour calculer l'AUC moyen.
-    
-    :param model: le modèle à évaluer
-    :param X: les données sur lesquelles faire des prédictions
-    :param y_true: les vraies étiquettes
-    """
-    
-
-    eval_model = ModelEvaluation(y_true, y_pred_proba)
-    score = eval_model.average_auc()
-    return score
-
 # Créer un scorer scikit-learn à partir de la fonction de scoring personnalisée
-average_auc_scorer = make_scorer(auc_scorer, needs_proba=True)
+multi_label_auc = make_scorer(multi_label_auc_scorer, needs_proba=True)
