@@ -19,7 +19,7 @@ class ModelEvaluation:
         """
         auc_scores = {}
         for i,column in enumerate(self.true_labels.columns):
-            auc = roc_auc_score(self.true_labels[column], self.predictions[i])
+            auc = roc_auc_score(self.true_labels[column], self.predictions[column])
             auc_scores[column] = auc
         return auc_scores
 
@@ -45,10 +45,12 @@ def auc_scorer(y_true,y_pred_proba):
     """
     Fonction de scoring personnalisée pour calculer l'AUC moyen.
     
-    :param y_pred_proba: les prédictions sous forme de proba
+    :param model: le modèle à évaluer
+    :param X: les données sur lesquelles faire des prédictions
     :param y_true: les vraies étiquettes
     """
     
+
     eval_model = ModelEvaluation(y_true, y_pred_proba)
     score = eval_model.average_auc()
     return score
