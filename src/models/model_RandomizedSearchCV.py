@@ -1,9 +1,9 @@
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 import joblib
 
-class GridSearch:
+class RandomSearch:
     
-    def __init__(self, estimator, param_grid, cv=5, scoring='accuracy', verbose=1, n_jobs=-1):
+    def __init__(self, estimator,param_grid,n_iter=10, cv=5, scoring='accuracy', verbose=1, n_jobs=-1):
         """
         Initialisation avec des arguments dynamiques.
 
@@ -14,20 +14,19 @@ class GridSearch:
         :param verbose: Niveau de verbosité de la sortie.
         :param n_jobs: Nombre de jobs à exécuter en parallèle.
         """
-        self.grid_search = GridSearchCV(estimator, param_grid, cv=cv, scoring=scoring, verbose=verbose, n_jobs=n_jobs)
+        self.random_search = RandomizedSearchCV(estimator,param_grid,n_iter=n_iter,  cv=cv, scoring=scoring, verbose=verbose, n_jobs=n_jobs)
 
     def fit(self, X, y):
         """
         Exécute la recherche par grille sur les données fournies.
-
+        
         :param X: Les caractéristiques d'entraînement.
         :param y: Les étiquettes cibles.
         """
-
-        self.grid_search.fit(X, y)
-        self.cv_results_ = self.grid_search.cv_results_
-        print(f"Meilleurs paramètres: {self.grid_search.best_params_}")
-        print(f"Meilleur score: {self.grid_search.best_score_}")
+        
+        self.random_search.fit(X, y)
+        print(f"Meilleurs paramètres: {self.random_search.best_params_}")
+        print(f"Meilleur score: {self.random_search.best_score_}")
 
     def predict(self, X):
         """
@@ -36,9 +35,9 @@ class GridSearch:
         :param X: Les caractéristiques pour lesquelles faire des prédictions.
         :return: Les prédictions du modèle.
         """
-        if self.grid_search is None:
-            raise Exception("GridSearchCV n'a pas encore été ajusté.")
-        return self.grid_search.predict(X)
+        if self.random_search is None:
+            raise Exception("RandomizedSearchCV n'a pas encore été ajusté.")
+        return self.random_search.predict(X)
 
     def save_best_model(self, file_path):
         """
@@ -46,6 +45,6 @@ class GridSearch:
         
         :param file_path: Chemin du fichier où sauvegarder le modèle.
         """
-        if self.grid_search is None:
-            raise Exception("GridSearchCV n'a pas encore été ajusté.")
-        joblib.dump(self.grid_search.best_estimator_, file_path)
+        if self.random_search is None:
+            raise Exception("RandomizedSearchCV n'a pas encore été ajusté.")
+        joblib.dump(self.random_search.best_estimator_, file_path)
