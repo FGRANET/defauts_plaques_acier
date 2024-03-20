@@ -120,11 +120,16 @@ def main():
             n_iter=20    
             random_search=RandomSearch(estimator=wrapped_model, param_grid=param_grid, n_iter=n_iter, cv=5, scoring=multi_label_auc)
             random_search.fit(X_train,y_train)
-            for i, (params, score) in enumerate(random_search.random_search.grid_scores_):
-                mlflow.log_params(params)
-                mlflow.log_metric("multi_label_auc_scorer", score, step=i)
-
+                    # Parcours des résultats de la recherche sur grille
+            for i in range(len(random_search.random_search.cv_results_['params'])):
+                with mlflow.start_run(nested=True):  # Commence un sous-run pour chaque combinaison de paramètres
+                    params = random_search.random_search.cv_results_['params'][i]
+                    score = random_search.random_search.cv_results_['mean_test_score'][i]
             
+                    # Logging des paramètres et du score moyen pour le run actuel
+                    mlflow.log_params(params)
+                    mlflow.log_metric("mean_test_score", score)
+                    mlflow.end_run()  # Termine le sous-run
 
             y_pred_proba = random_search.random_search.best_estimator_.predict_proba(X_test)
             
