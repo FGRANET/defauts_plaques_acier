@@ -29,7 +29,7 @@ parser.add_argument('--model-random-forest', action='store_true', help="Entraine
 parser.add_argument('--model-gridsearch', action='store_true', help="Recherche de grille d'hyperpapramètres par Grid Search")
 parser.add_argument('--model-randomsearch', action='store_true', help="Recherche de grille d'hyperpapramètres par Random Search")
 parser.add_argument('--model-evaluation', action='store_true', help="Evaluation sur le test")
-# Ajout d'autres arguments selon les besoins
+
 args = parser.parse_args()
 
 
