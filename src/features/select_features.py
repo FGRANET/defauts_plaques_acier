@@ -203,60 +203,62 @@ def select_features_kbest(X_train, y_train, X_test, k=20):
 
 """
 
-#Programme principal
-while True:
-    try:
-        nombre = int(input("Entrez un nombre entier compris entre 1 et 27 pour selectionner autant de variables: "))
-        if 1 <= nombre <= 27:
-            print(f"Vous avez choisi de selectionner {nombre} caratéristiques.")
-            break
-        else:
-            print("Votre nombre n'est pas compris entre 1 et 27. Veuillez réessayer.")
-    except ValueError:
-        print("Vous n'avez pas entré un nombre entier. Veuillez réessayer.")   
-
 #Chargement du DataFrame
 df= load_raw_data("/train.csv")
 #Séparation des variables et des cibles
 features = df.iloc[:,:-7]
 targets = df.iloc[:,-7:]
 
-while True:
-    try:
-        method = str(input("Quelle méthode voulez vous utiliser en premier pour commencer à compter les variables non utilisées : correlation,f_classif ou mutual_info_classif?"))
-        if method in ["correlation","f_classif","mutual_info_classif"]:
-            print(f"Vous avez choisi la méthode {method}. Patience, je calcule...",end="\n\n")
-            break
+#Programme principal
+
+if __name__ == '__main__':        
+    while True:
+        try:
+            nombre = int(input("Entrez un nombre entier compris entre 1 et 27 pour selectionner autant de variables: "))
+            if 1 <= nombre <= 27:
+                print(f"Vous avez choisi de selectionner {nombre} caratéristiques.")
+                break
+            else:
+                print("Votre nombre n'est pas compris entre 1 et 27. Veuillez réessayer.")
+        except ValueError:
+            print("Vous n'avez pas entré un nombre entier. Veuillez réessayer.")   
+
+    while True:
+        try:
+            method = str(input("Quelle méthode voulez vous utiliser en premier pour commencer à compter les variables non utilisées : correlation,f_classif ou mutual_info_classif?"))
+            if method in ["correlation","f_classif","mutual_info_classif"]:
+                print(f"Vous avez choisi la méthode {method}. Patience, je calcule...",end="\n\n")
+                break
+            else:
+                print("Vous n'avez pas choisi une méthode disponible. Veuillez réessayer.")
+        except ValueError:
+            print("Vous n'avez pas entré une chaîne de caractères. Veuillez réessayer.")
+
+    dictionnaire_useless_features = count_useless_features(df=df,features=features,targets=targets, method=method,correlation_threshold=0.1)
+    print(f"Voici les variables les moins utilisées par la méthode {method}] :", dictionnaire_useless_features, end="\n\n")
+
+    print("Je réalise les mêmes calculs pour les autres méthodes de sélection, patientez... ",end="\n")
+
+    dictionnaire_trie = dico_f_classif_trie=count_useless_features(df=df,features=features,targets=targets, method="correlation",correlation_threshold=0.1)
+    dico_f_classif_trie=count_useless_features(df=df,features=features,targets=targets, method="f_classif",correlation_threshold=0.1)
+    dico_mutual_info_trie = count_useless_features(df=df,features=features,targets=targets, method="mutual_info_classif",correlation_threshold=0.1) 
+
+    result = {}
+
+    for key in dictionnaire_trie:
+        if key in dico_f_classif_trie:
+            result[key] = dictionnaire_trie[key] + dico_f_classif_trie[key]
         else:
-            print("Vous n'avez pas choisi une méthode disponible. Veuillez réessayer.")
-    except ValueError:
-        print("Vous n'avez pas entré une chaîne de caractères. Veuillez réessayer.")
+            result[key] = dictionnaire_trie[key]
 
-dictionnaire_useless_features = count_useless_features(df=df,features=features,targets=targets, method=method,correlation_threshold=0.1)
-print(f"Voici les variables les moins utilisées par la méthode {method}] :", dictionnaire_useless_features, end="\n\n")
+    for key in dico_f_classif_trie:
+        if key not in dictionnaire_trie:
+            result[key] = dico_f_classif_trie[key]
 
-print("Je réalise les mêmes calculs pour les autres méthodes de sélection, patientez... ",end="\n")
-
-dictionnaire_trie = dico_f_classif_trie=count_useless_features(df=df,features=features,targets=targets, method="correlation",correlation_threshold=0.1)
-dico_f_classif_trie=count_useless_features(df=df,features=features,targets=targets, method="f_classif",correlation_threshold=0.1)
-dico_mutual_info_trie = count_useless_features(df=df,features=features,targets=targets, method="mutual_info_classif",correlation_threshold=0.1) 
-
-result = {}
-
-for key in dictionnaire_trie:
-    if key in dico_f_classif_trie:
-        result[key] = dictionnaire_trie[key] + dico_f_classif_trie[key]
-    else:
-        result[key] = dictionnaire_trie[key]
-
-for key in dico_f_classif_trie:
-    if key not in dictionnaire_trie:
-        result[key] = dico_f_classif_trie[key]
-
-for key in dico_mutual_info_trie:
-    if key in result:
-        result[key] += dico_mutual_info_trie[key]
-    else:
-        result[key] = dico_mutual_info_trie[key]
-print("\n\n Voici les variable les moins utilisées pour l'ensemble des trois méthodes sont : ", result)
+    for key in dico_mutual_info_trie:
+        if key in result:
+            result[key] += dico_mutual_info_trie[key]
+        else:
+            result[key] = dico_mutual_info_trie[key]
+    print("\n\n Voici les variable les moins utilisées pour l'ensemble des trois méthodes sont : ", result)
 
