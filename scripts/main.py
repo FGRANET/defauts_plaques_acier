@@ -13,9 +13,9 @@ from src.evaluation.model_evaluation import*
 from src.models.multi_label import*
 import mlflow
 from src.evaluation.ml_flow import*
+import runpy
 
-
-mlflow.set_experiment("Defauts_Plques_Acier_Experiment")
+mlflow.set_experiment("Defauts_Plaques_Acier_Experiment")
 
 parser = argparse.ArgumentParser(description="Pipeline d'exécution pour le projet DEFAUTS_PLAQUES_ACIER")
 parser.add_argument('--load-data', action='store_true', help="Charge les données depuis le fichier CSV")
@@ -55,7 +55,13 @@ def main():
             X_train,X_test,preprocessing_step= standardize_data(X_train,X_test)
             mlflow.log_param("preprocess", preprocessing_step)
         
-        if args.select_features: #outils de sélection de réduction de dimension
+        if args.select_features: #outils de sélection de réduction de dimension                
+            
+            #autre option qui consiste à appeler le script de selection de caractéristiques qui se trouve dans le dossier src
+            #runpy.run_path('src/select_features.py', init_globals=globals(), run_name='__main__', alter_sys=True)
+            
+            if args.method =='select_kbest':
+                
             if args.method =='select_kbest':
                 X_train, X_test,selector = select_features_kbest(X_train, y_train, X_test, k=10) 
             elif args.method == 'select_from_model':

@@ -1,7 +1,7 @@
 #dictionnaire exhaustif des hyperparamètres
 # src/models/logictic_regression.py
-#utiliser la regression logistique comme une baseline pour la prédiction des autres modles
-# s'assrurer de l'absence de variables corrélées entre elles --> features selection, et réduire les outliers
+# utiliser la regression logistique comme une baseline pour la prédiction des autres modles
+# s'assurer de l'absence de variables corrélées entre elles --> features selection, et réduire les outliers
 
 from sklearn.linear_model import LogisticREgression
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -88,13 +88,12 @@ class LogisticRegression(self):
         """
         return f"{self.name}(penalty={self.model.penalty}, C={self.model.C}, max_iter={self.model.max_iter}, solver={self.model.solver}, random_state={self.model.random_state})"
 
-       #Fonction pour envelopper le modèle pour un modèle multi-target
 
-    def multioutput_pileline(self,preprocessor):
+    def multioutput_pipeline(self,preprocessor):
         """
         Crée un pipeline qui combine un prétraitement (preprocessor) et un modèle de régression multi-sortie
         """
-    # Créer un pipeline avec un prétraitement (ex: normalisation) et un modèle de régression multi-sortie
+    # Créer un pipeline avec un prétraitement (ex: normalisation) et un modèle de régression multi-target
         pipeline = Pipeline([
         ('preprocessor', preprocessor),    
         ('regressor', MultiOutputRegressor(self.model))

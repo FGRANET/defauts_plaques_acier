@@ -12,6 +12,7 @@ import numpy as np
 import tabulate
 import math
 import collections
+from sklearn.utils import check_X_y
 
 
 from sklearn.feature_selection import (
@@ -87,7 +88,6 @@ def select_features_kbest(df, features, target, method, k=20):
 
     return df[selected_columns].columns
 
-
 def select_features_select_from_model(X_train,X_test, y_train, model=None, threshold='mean'):
     """
     Sélectionne les caractéristiques en utilisant SelectFromModel.
@@ -110,8 +110,46 @@ def select_features_select_from_model(X_train,X_test, y_train, model=None, thres
     return X_train_selected,X_test_selected, selected_features,"select_from_model"
 
 
-def select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=None):
+def select_features_rfe(features,target,n_features_to_select=20, model=None):
     """
+    Sélectionne les k meilleures caractéristiques en utilisant RFE.
+
+    :param features: Features d'entrainement.
+    :param target: Target d'entraînement.
+    :param n_features_to_select: Nombre de caractéristiques à sélectionner.
+    :param model: Modèle à utiliser pour l'évaluation des caractéristiques. Si None, RandomForestClassifier est utilisé.
+    :return les colonnes conservées à la suite de la selection 
+    """
+    target=targets[target]
+    
+   # Vérification des types et des valeurs des arguments en entrée
+    if not isinstance(features, (np.ndarray, pd.DataFrame)):
+        raise ValueError("features doit être un tableau NumPy ou un DataFrame Pandas")
+    if not isinstance(target, (np.ndarray, pd.Series)):
+        raise ValueError("target doit être un tableau NumPy ou une série Pandas")
+    if not isinstance(n_features_to_select, int) or n_features_to_select <= 0:
+        raise ValueError("n_features_to_select doit être un entier positif")
+
+    # Vérification des dimensions des données d'entrée
+    features, target = check_X_y(features, target)  
+   
+    if model is None:
+        model = RandomForestClassifier()
+    
+    #instanciation    
+    rfe = RFE(estimator=model, n_features_to_select=n_features_to_select)
+    
+    features_new=rfe.fit_transform(features,target)
+    
+    features_new=pd.DataFrame(features_new)
+    
+    features_new.columns = rfe.get_feature_names_out()  
+    
+    return features_new.columns
+
+""" old :
+def select_features_rfe(features, target, n_features_to_select=20, model=None):
+    "
     Sélectionne les k meilleures caractéristiques en utilisant RFE.
 
     :param X_train: Features d'entrainement.
@@ -119,19 +157,16 @@ def select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=
     :param n_features_to_select: Nombre de caractéristiques à sélectionner.
     :param model: Modèle à utiliser pour l'évaluation des caractéristiques. Si None, RandomForestClassifier est utilisé.
     :return: X_train avec les caractéristiques sélectionnées, X_test avec les caractéristiques sélectionnées et  liste des noms des caractéristiques sélectionnées.
-    """
-    if model is None:
+        if model is None:
         model = RandomForestClassifier()
-        
-    rfe = RFE(estimator=model, n_features_to_select=n_features_to_select)
+        rfe = RFE(estimator=model, n_features_to_select=n_features_to_select)
     rfe.fit(X_train, y_train)
     
     X_train_selected = rfe.transform(X_train)
     X_test_selected = rfe.transform(X_test)
     selected_features = X_train.columns[rfe.support_]
-    
     return X_train_selected,X_test_selected, selected_features,"rfe"
-
+"""
 
 #Comptage des variables non utilisés
 
@@ -169,7 +204,12 @@ def count_useless_features(df,features,targets,method,correlation_threshold=0.1)
 
             selected_features=select_features_kbest(df=df,features=features,target=target,
                                                     method=mutual_info_classif,
-                                                    k=20)    
+                                                    k=20)
+        
+        elif method == "rfe":
+    
+            selected_features=select_features_rfe(features=features,target=target,n_features_to_select=20)
+            
         else:
             print("Vous n'avez pas choisi une méthode appropriée.")
 
@@ -210,8 +250,13 @@ features = df.iloc[:,:-7]
 targets = df.iloc[:,-7:]
 
 #Programme principal
+"""
+Conduit à redéfinir les features qui seront utilisées, en fonction du nombre de variables qu'il est choisi de supprimer
+"""
 
-if __name__ == '__main__':        
+if __name__ == '__main__':  
+    
+    """     
     while True:
         try:
             nombre = int(input("Entrez un nombre entier compris entre 1 et 27 pour selectionner autant de variables: "))
@@ -236,29 +281,36 @@ if __name__ == '__main__':
 
     dictionnaire_useless_features = count_useless_features(df=df,features=features,targets=targets, method=method,correlation_threshold=0.1)
     print(f"Voici les variables les moins utilisées par la méthode {method}] :", dictionnaire_useless_features, end="\n\n")
+    """
+    
+    print("Je réalise les calcules pour l'ensemble des 4 méthodes de sélection, patientez... ",end="\n")
 
-    print("Je réalise les mêmes calculs pour les autres méthodes de sélection, patientez... ",end="\n")
-
+    # création des dictionnaires correspondant à chaque mêthode
     dictionnaire_trie = dico_f_classif_trie=count_useless_features(df=df,features=features,targets=targets, method="correlation",correlation_threshold=0.1)
     dico_f_classif_trie=count_useless_features(df=df,features=features,targets=targets, method="f_classif",correlation_threshold=0.1)
     dico_mutual_info_trie = count_useless_features(df=df,features=features,targets=targets, method="mutual_info_classif",correlation_threshold=0.1) 
-
+    dico_rfe_trie=count_useless_features(df=df,features=features,targets=targets,method="rfe",correlation_threshold=0.1) 
+    
+    print("je vais additionner les 4 dictionnaires... ",end="\n")
+    
     result = {}
-
+    # Boucle pour parcourir les clés des quatre dictionnaires
     for key in dictionnaire_trie:
-        if key in dico_f_classif_trie:
-            result[key] = dictionnaire_trie[key] + dico_f_classif_trie[key]
-        else:
-            result[key] = dictionnaire_trie[key]
+    # Ajout des valeurs correspondantes dans le résultat
+        result[key] = dictionnaire_trie[key] + dico_f_classif_trie[key] + dico_mutual_info_trie[key] + dico_rfe_trie[key]
 
-    for key in dico_f_classif_trie:
-        if key not in dictionnaire_trie:
-            result[key] = dico_f_classif_trie[key]
-
-    for key in dico_mutual_info_trie:
-        if key in result:
-            result[key] += dico_mutual_info_trie[key]
-        else:
-            result[key] = dico_mutual_info_trie[key]
+    # Tri du résultat en fonction des valeurs
+    result = dict(sorted(result.items(), key=lambda item: item[1], reverse=True))
+        
     print("\n\n Voici les variable les moins utilisées pour l'ensemble des trois méthodes sont : ", result)
+    
+    nombre = int(input("Combien de variables voulez-vous éliminer par les vaiables les moins selectionnées ? Entrez un nombre entier compris entre 1 et 26: "))
+    print(f"Vous avez choisi d'éliminer {nombre} caratéristiques.")
 
+    # Récupération des nombre premières clés du dictionnaire
+    useless_features = list(result.keys())[:nombre]
+    
+    print(f"Voici les {nombre} variables les moins utilisées : ", useless_features)      
+    
+    # Suppression des variables non utilisées dans le dataframe
+    features = features.drop(useless_features, axis=1)
