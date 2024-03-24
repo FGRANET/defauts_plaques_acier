@@ -11,7 +11,7 @@ import os
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.pipeline import Pipeline
 
-class LogisticRegression(self):
+class LogisticRegressionModel(self):
 
     def __init__(self,penalty='l1',C=0.1, max_iter=100, solver = 'saga',random_state=42):
         """

@@ -26,6 +26,7 @@ parser.add_argument('--feature-engineering',action='store_true', help="Création
 parser.add_argument('--select-features', action='store_true', help="Activer la sélection de caractéristiques")
 parser.add_argument('--method', type=str, default='select_from_model', choices=['select_kbest','select_from_model', 'rfe'], help="Méthode de sélection de caractéristiques à utiliser")
 parser.add_argument('--model-random-forest', action='store_true', help="Entrainement random forest")
+parser.add_argument('--model-regression-logictic', action='store_true', help="Entrainement Regression Logistique")
 parser.add_argument('--model-gridsearch', action='store_true', help="Recherche de grille d'hyperpapramètres par Grid Search")
 parser.add_argument('--model-randomsearch', action='store_true', help="Recherche de grille d'hyperpapramètres par Random Search")
 parser.add_argument('--model-evaluation', action='store_true', help="Evaluation sur le test")
@@ -39,7 +40,7 @@ def main():
         if args.load_data: #chargement des données
             data_folder_path= "C:/Users/franc/DATA/DATA_Projet/Kaggle/defauts_plaques_acier"
             df = load_csv_data('train.csv', data_folder_path)
-        
+             
         if args.clean_data: #nettoyage des données
             df = dropna(df)
             df = drop_duplicates(df)
@@ -57,11 +58,12 @@ def main():
         
         if args.select_features: #outils de sélection de réduction de dimension                
             
+            #option 1
             #autre option qui consiste à appeler le script de selection de caractéristiques qui se trouve dans le dossier src
             #runpy.run_path('src/select_features.py', init_globals=globals(), run_name='__main__', alter_sys=True)
+            #Partie en mettre en amont après le nettoyage des données (je n'ai pas séparé les jeux de données/entrainement et test)
             
-            if args.method =='select_kbest':
-                
+            #option2 
             if args.method =='select_kbest':
                 X_train, X_test,selector = select_features_kbest(X_train, y_train, X_test, k=10) 
             elif args.method == 'select_from_model':
@@ -70,12 +72,13 @@ def main():
             elif args.method == 'rfe':
                 X_train, X_test, selected_features,selector = select_features_rfe(X_train,X_test, y_train, n_features_to_select=10, model=None)
                 print(f"Caractéristiques sélectionnées : {selected_features}")
-            mlflow.log_param("selector", selector)
-            
+            mlflow.log_param("selector", selector)            
         
         if args.model_random_forest:
+                       
             model = RandomForestModel()
             model.train(X_train, y_train)
+                       
             y_pred_proba = model.predict_proba(X_test)
             # Extraire la probabilité de la classe positive pour chaque cible et créer un array 2D
             prob_positives = np.array([proba[:, 1] for proba in y_pred_proba]).T  # Transposer pour avoir la forme correcte (n_samples, n_targets)
@@ -85,8 +88,26 @@ def main():
             params = {"model": model.name}
             params.update(model.model.get_params())
             metrics = {"multi_label_auc_scorer": multi_label_auc_scorer(y_test, y_pred_proba)}
-            log_params_metrics(params, metrics)
-        
+            log_params_metrics(params, metrics)                   
+                   
+        if args.model_logistic_regression:
+                       
+            model = LogisticRegressionModel()
+            wrapped_model = MultiLabelModelWrapper(model)
+            wrapped_model.train(X_train, y_train)
+                       
+            y_pred_proba = wrapped_model.predict_proba(X_test)
+            # Extraire la probabilité de la classe positive pour chaque cible et créer un array 2D
+            prob_positives = np.array([proba[:, 1] for proba in y_pred_proba]).T  # Transposer pour avoir la forme correcte (n_samples, n_targets)
+            y_pred_proba = pd.DataFrame(prob_positives, columns=y_test.columns)
+
+            # Enregistrement des paramètres et des métriques dans MLflow
+            params = {"model": wrapped_model.name}
+            params.update(wrapped_model.model.get_params())
+            metrics = {"multi_label_auc_scorer": multi_label_auc_scorer(y_test, y_pred_proba)}
+            log_params_metrics(params, metrics)                   
+                   
+                   
         if args.model_gridsearch:
             #utilisation de la classe RandomForestClassifier de scikitlearn
             base_model = RandomForestClassifier() 
@@ -126,7 +147,8 @@ def main():
             n_iter=20    
             random_search=RandomSearch(estimator=wrapped_model, param_grid=param_grid, n_iter=n_iter, cv=5, scoring=multi_label_auc)
             random_search.fit(X_train,y_train)
-                    # Parcours des résultats de la recherche sur grille
+            
+            # Parcours des résultats de la recherche sur grille
             for i in range(len(random_search.random_search.cv_results_['params'])):
                 with mlflow.start_run(nested=True):  # Commence un sous-run pour chaque combinaison de paramètres
                     params = random_search.random_search.cv_results_['params'][i]
@@ -142,6 +164,8 @@ def main():
             score = multi_label_auc_scorer(y_test,y_pred_proba)
 
             print(f"le meilleur modèle a pour score sur le test :{score}")
+            
+                     
         
         if args.model_evaluation:
             eval_test = ModelEvaluation(y_test, y_pred_proba)
