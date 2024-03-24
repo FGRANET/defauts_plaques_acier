@@ -13,7 +13,7 @@ import tabulate
 import math
 import collections
 from sklearn.utils import check_X_y
-
+import mlflow
 
 from sklearn.feature_selection import (
     SelectKBest, 
@@ -25,24 +25,14 @@ from sklearn.feature_selection import (
     mutual_info_regression
 )
 
-def load_raw_data(name):
-    # Définir le chemin du dossier actuel du notebook
-    current_dir = os.getcwd()
-    
-    # Accéder au répertoire parent
-    parent_dir = os.path.dirname(current_dir)
-    
-    parent_dir_root = os.path.dirname(parent_dir)
+dossier_github_frederic = "/media/frederic/Echanges_Linux_Windows/GitHUb/defauts_acier/defauts_plaques_acier"
+from src.data.load_data import load_csv_data
 
-    raw_data_dir = parent_dir_root  + "/data_to_use/raw"
-
-    # Afficher le chemin du répertoire parent
-    print("Répertoire des données brutes: \n", raw_data_dir)
-    
-    #Chargement d'un dataframe
-    df=pd.read_csv(raw_data_dir + name, index_col=0)
-        
-    return df
+#Chargement du DataFrame
+df= load_csv_data(data_filename="train.csv",data_folder_path=dossier_github_frederic)
+#Séparation des variables et des cibles
+features = df.iloc[:,:-7]
+targets = df.iloc[:,-7:]
 
 # Méthodologie de sélection des features
 
@@ -243,11 +233,7 @@ def select_features_kbest(X_train, y_train, X_test, k=20):
 
 """
 
-#Chargement du DataFrame
-df= load_raw_data("/train.csv")
-#Séparation des variables et des cibles
-features = df.iloc[:,:-7]
-targets = df.iloc[:,-7:]
+
 
 #Programme principal
 """
@@ -310,7 +296,10 @@ if __name__ == '__main__':
     # Récupération des nombre premières clés du dictionnaire
     useless_features = list(result.keys())[:nombre]
     
-    print(f"Voici les {nombre} variables les moins utilisées : ", useless_features)      
-    
+    print(f"Voici les {nombre} variables les moins utilisées : ",useless_features)   
+        
     # Suppression des variables non utilisées dans le dataframe
-    features = features.drop(useless_features, axis=1)
+    selected_features = features.drop(useless_features, axis=1)
+
+    # enregistrement des caractéristiques sélectionnées dans un fichier CSV
+    selected_features.to_csv( "/media/frederic/Echanges_Linux_Windows/GitHUb/defauts_acier/defauts_plaques_acier/data_to_use" + '/selected_features.csv', index=False)
