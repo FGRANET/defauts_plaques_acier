@@ -123,9 +123,9 @@ def pipeline():
             wrapped_model = MultiLabelModelWrapper(base_model)
 
             param_grid = {
-                            'n_estimators': [100, 200],
-                            'max_depth': [5, 10, None]
-                        }
+                                'n_estimators': [i for i in range(100,2000,100)],
+                                'max_depth': [5, 10, None]
+                            }
             
             grid_search=GridSearch(estimator=wrapped_model, param_grid=param_grid, cv=5, scoring=multi_label_auc)
             grid_search.fit(X_train,y_train)
