@@ -24,7 +24,7 @@ from sklearn.feature_selection import (
     mutual_info_classif,
     mutual_info_regression
 )
-
+"""
 dossier_github_frederic = "/media/frederic/Echanges_Linux_Windows/GitHUb/defauts_acier/defauts_plaques_acier"
 from src.data.load_data import load_csv_data
 
@@ -33,7 +33,7 @@ df= load_csv_data(data_filename="train.csv",data_folder_path=dossier_github_fred
 #Séparation des variables et des cibles
 features = df.iloc[:,:-7]
 targets = df.iloc[:,-7:]
-
+"""
 # Méthodologie de sélection des features
 
 def correlation_selection(df,features,targets,target,correlation_threshold=0.1):
@@ -238,11 +238,11 @@ def select_features_kbest(X_train, y_train, X_test, k=20):
 #Programme principal
 """
 Conduit à redéfinir les features qui seront utilisées, en fonction du nombre de variables qu'il est choisi de supprimer
-"""
+
 
 if __name__ == '__main__':  
-    
-    """     
+  
+         
     while True:
         try:
             nombre = int(input("Entrez un nombre entier compris entre 1 et 27 pour selectionner autant de variables: "))
@@ -267,7 +267,7 @@ if __name__ == '__main__':
 
     dictionnaire_useless_features = count_useless_features(df=df,features=features,targets=targets, method=method,correlation_threshold=0.1)
     print(f"Voici les variables les moins utilisées par la méthode {method}] :", dictionnaire_useless_features, end="\n\n")
-    """
+    
     
     print("Je réalise les calcules pour l'ensemble des 4 méthodes de sélection, patientez... ",end="\n")
 
@@ -302,4 +302,4 @@ if __name__ == '__main__':
     selected_features = features.drop(useless_features, axis=1)
 
     # enregistrement des caractéristiques sélectionnées dans un fichier CSV
-    selected_features.to_csv( "/media/frederic/Echanges_Linux_Windows/GitHUb/defauts_acier/defauts_plaques_acier/data_to_use" + '/selected_features.csv', index=False)
+    selected_features.to_csv( "/media/frederic/Echanges_Linux_Windows/GitHUb/defauts_acier/defauts_plaques_acier/data_to_use" + '/selected_features.csv', index=False)"""

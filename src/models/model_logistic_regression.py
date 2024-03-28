@@ -3,7 +3,7 @@
 # utiliser la regression logistique comme une baseline pour la prédiction des autres modles
 # s'assurer de l'absence de variables corrélées entre elles --> features selection, et réduire les outliers
 
-from sklearn.linear_model import LogisticREgression
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score
 import joblib
@@ -11,7 +11,7 @@ import os
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.pipeline import Pipeline
 
-class LogisticRegressionModel(self):
+class LogisticRegressionModel:
 
     def __init__(self,penalty='l1',C=0.1, max_iter=100, solver = 'saga',random_state=42):
         """

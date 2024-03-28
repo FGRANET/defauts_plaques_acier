@@ -11,13 +11,14 @@ parent_current_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 sys.path.append(parent_current_dir)
 
-from src.data.load_data import load_csv_data
+from src.data.load_data_2 import load_csv_data
 from src.data.clean_data import dropna, drop_duplicates
 from src.data.split_data import split_data
 from src.data.preprocess_data import standardize_data
-#from src.features.select_features import select_features_kbest,select_features_select_from_model,select_features_rfe
+from src.features.select_features import select_features_kbest,select_features_select_from_model,select_features_rfe
 from src.models.model_random_forest import* 
 from src.models.model_gridsearch import*
+from src.models.model_logistic_regression import*
 from src.models.model_RandomizedSearchCV import*
 from src.evaluation.model_evaluation import*
 from src.models.multi_label import*
@@ -36,7 +37,7 @@ parser.add_argument('--feature-engineering',action='store_true', help="Création
 parser.add_argument('--select-features', action='store_true', help="Activer la sélection de caractéristiques")
 parser.add_argument('--method', type=str, default='select_from_model', choices=['select_kbest','select_from_model', 'rfe'], help="Méthode de sélection de caractéristiques à utiliser")
 parser.add_argument('--model-random-forest', action='store_true', help="Entrainement random forest")
-parser.add_argument('--model-regression-logictic', action='store_true', help="Entrainement Regression Logistique")
+parser.add_argument('--model-regression-logistic', action='store_true', help="Entrainement Regression Logistique")
 parser.add_argument('--model-gridsearch', action='store_true', help="Recherche de grille d'hyperpapramètres par Grid Search")
 parser.add_argument('--model-randomsearch', action='store_true', help="Recherche de grille d'hyperpapramètres par Random Search")
 parser.add_argument('--model-evaluation', action='store_true', help="Evaluation sur le test")
@@ -48,8 +49,7 @@ def main():
     with mlflow.start_run():
 
         if args.load_data: #chargement des données
-            data_folder_path= "C:/Users/franc/DATA/DATA_Projet/Kaggle/defauts_plaques_acier"
-            df = load_csv_data('train.csv', data_folder_path)
+            df = load_csv_data('train.csv')
              
         if args.clean_data: #nettoyage des données
             df = dropna(df)
@@ -100,20 +100,19 @@ def main():
             metrics = {"multi_label_auc_scorer": multi_label_auc_scorer(y_test, y_pred_proba)}
             log_params_metrics(params, metrics)                   
                    
-        if args.model_logistic_regression:
+        if args.model_regression_logistic:
                        
             model = LogisticRegressionModel()
-            wrapped_model = MultiLabelModelWrapper(model)
-            wrapped_model.train(X_train, y_train)
+            model.train(X_train, y_train)
                        
-            y_pred_proba = wrapped_model.predict_proba(X_test)
+            y_pred_proba = model.predict_proba(X_test)
             # Extraire la probabilité de la classe positive pour chaque cible et créer un array 2D
             prob_positives = np.array([proba[:, 1] for proba in y_pred_proba]).T  # Transposer pour avoir la forme correcte (n_samples, n_targets)
             y_pred_proba = pd.DataFrame(prob_positives, columns=y_test.columns)
 
             # Enregistrement des paramètres et des métriques dans MLflow
-            params = {"model": wrapped_model.name}
-            params.update(wrapped_model.model.get_params())
+            params = {"model": model.name}
+            params.update(model.model.get_params())
             metrics = {"multi_label_auc_scorer": multi_label_auc_scorer(y_test, y_pred_proba)}
             log_params_metrics(params, metrics)                   
                    
