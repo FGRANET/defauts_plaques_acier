@@ -11,7 +11,7 @@ parent_current_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 sys.path.append(parent_current_dir)
 
-from src.data.load_data_2 import load_csv_data
+from src.data.load_data import load_csv_data
 from src.data.clean_data import dropna, drop_duplicates
 from src.data.split_data import split_data
 from src.data.preprocess_data import standardize_data
@@ -24,7 +24,7 @@ from src.evaluation.model_evaluation import*
 from src.models.multi_label import*
 import mlflow
 from src.evaluation.ml_flow import*
-from src.utils.config import load_config
+from src.utils.config import load_json
 
 mlflow.set_experiment("Defauts_Plaques_Acier_Experiment")
 
@@ -150,7 +150,7 @@ def pipeline():
             wrapped_model = MultiLabelModelWrapper(base_model)
 
             #import du fichier des hyperparamètres via un json
-            config=load_config("random_forest_randomsearch.json")
+            config=load_json("random_forest_randomsearch.json")
             param_grid =config["RandomForestClassifier"]
 
             n_iter=100    
