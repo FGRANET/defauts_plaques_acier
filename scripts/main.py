@@ -45,7 +45,7 @@ parser.add_argument('--model-evaluation', action='store_true', help="Evaluation 
 args = parser.parse_args()
 
 
-def main():
+def pipeline():
     with mlflow.start_run():
 
         if args.load_data: #chargement des données
@@ -184,4 +184,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    pipeline()
