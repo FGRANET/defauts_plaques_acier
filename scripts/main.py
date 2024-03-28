@@ -153,7 +153,7 @@ def pipeline():
                                 'n_estimators': [i for i in range(100,2000,100)],
                                 'max_depth': [5, 10, None]
                             }
-            n_iter=20    
+            n_iter=100    
             random_search=RandomSearch(estimator=wrapped_model, param_grid=param_grid, n_iter=n_iter, cv=5, scoring=multi_label_auc)
             random_search.fit(X_train,y_train)
             
