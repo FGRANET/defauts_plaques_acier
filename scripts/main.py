@@ -1,11 +1,21 @@
 import argparse
 import pandas as pd
 import numpy as np
+import sys
+import os
+
+# Récupérer le chemin d'accès du répertoire courant
+current_dir = os.getcwd()
+# Accéder au répertoire parent en utilisant os.pardir : on accède alors au repertoire scr
+parent_current_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+
+sys.path.append(parent_current_dir)
+
 from src.data.load_data import load_csv_data
 from src.data.clean_data import dropna, drop_duplicates
 from src.data.split_data import split_data
 from src.data.preprocess_data import standardize_data
-from src.features.select_features import select_features_kbest,select_features_select_from_model,select_features_rfe
+#from src.features.select_features import select_features_kbest,select_features_select_from_model,select_features_rfe
 from src.models.model_random_forest import* 
 from src.models.model_gridsearch import*
 from src.models.model_RandomizedSearchCV import*
@@ -13,7 +23,7 @@ from src.evaluation.model_evaluation import*
 from src.models.multi_label import*
 import mlflow
 from src.evaluation.ml_flow import*
-import runpy
+
 
 mlflow.set_experiment("Defauts_Plaques_Acier_Experiment")
 
