@@ -24,7 +24,7 @@ from src.evaluation.model_evaluation import*
 from src.models.multi_label import*
 import mlflow
 from src.evaluation.ml_flow import*
-
+from src.utils.config import load_config
 
 mlflow.set_experiment("Defauts_Plaques_Acier_Experiment")
 
@@ -141,18 +141,18 @@ def pipeline():
                     mlflow.end_run()  # Termine le sous-run
 
             y_pred_proba = grid_search.grid_search.best_estimator_.predict_proba(X_test)
-            score = multi_label_auc_scorer(y_test,y_pred_proba)
-            print(f"le meilleur modèle a pour score sur le test :{score}")
+            best_score = multi_label_auc_scorer(y_test,y_pred_proba)
+            print(f"le meilleur modèle a pour score sur le test :{best_score}")
 
         if args.model_randomsearch:
             #utilisation de la classe RandomForestClassifier de scikitlearn
             base_model = RandomForestClassifier() 
             wrapped_model = MultiLabelModelWrapper(base_model)
 
-            param_grid = {
-                                'n_estimators': [i for i in range(100,2000,100)],
-                                'max_depth': [5, 10, None]
-                            }
+            #import du fichier des hyperparamètres via un json
+            config=load_config("random_forest_randomsearch.json")
+            param_grid =config["RandomForestClassifier"]
+
             n_iter=100    
             random_search=RandomSearch(estimator=wrapped_model, param_grid=param_grid, n_iter=n_iter, cv=5, scoring=multi_label_auc)
             random_search.fit(X_train,y_train)
